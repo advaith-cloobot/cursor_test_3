@@ -4,6 +4,8 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import WorkspaceGrid from './components/WorkspaceGrid';
 import SOWPage from './components/SOWPage';
+import MeetingManagementPage from './components/MeetingManagementPage';
+import MeetingDetailsPage from './components/MeetingDetailsPage';
 import './App.css';
 
 // Create dark theme
@@ -52,6 +54,8 @@ function App() {
           <Routes>
             <Route path="/" element={<WorkspaceGrid />} />
             <Route path="/sow/:workspaceId" element={<SOWPageWrapper />} />
+            <Route path="/workspace/:workspaceId/meetings" element={<MeetingManagementPageWrapper />} />
+            <Route path="/meeting/:meetingId/details" element={<MeetingDetailsPageWrapper />} />
           </Routes>
         </div>
       </Router>
@@ -63,6 +67,18 @@ function App() {
 function SOWPageWrapper() {
   const workspaceId = window.location.pathname.split('/sow/')[1];
   return <SOWPage workspaceId={parseInt(workspaceId)} />;
+}
+
+// Wrapper component for Meeting Management Page
+function MeetingManagementPageWrapper() {
+  const workspaceId = window.location.pathname.split('/workspace/')[1].split('/meetings')[0];
+  return <MeetingManagementPage workspaceId={parseInt(workspaceId)} />;
+}
+
+// Wrapper component for Meeting Details Page
+function MeetingDetailsPageWrapper() {
+  const meetingId = window.location.pathname.split('/meeting/')[1].split('/details')[0];
+  return <MeetingDetailsPage meetingId={parseInt(meetingId)} />;
 }
 
 export default App;

@@ -15,7 +15,8 @@ import {
   Upload as UploadIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as VisibilityIcon
+  Visibility as VisibilityIcon,
+  MeetingRoom as MeetingIcon
 } from '@mui/icons-material';
 
 const WorkspaceCard = ({ 
@@ -23,7 +24,8 @@ const WorkspaceCard = ({
   onEdit, 
   onDelete, 
   onUpload, 
-  onViewSOW 
+  onViewSOW,
+  onViewMeetings
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -41,6 +43,11 @@ const WorkspaceCard = ({
 
   const handleUpload = () => {
     onUpload(workspace.id);
+    handleMenuClose();
+  };
+
+  const handleViewMeetings = () => {
+    onViewMeetings(workspace.id);
     handleMenuClose();
   };
 
@@ -183,6 +190,10 @@ const WorkspaceCard = ({
         <MenuItem onClick={handleViewSOW}>
           <VisibilityIcon sx={{ mr: 1 }} />
           View SOW
+        </MenuItem>
+        <MenuItem onClick={handleViewMeetings}>
+          <MeetingIcon sx={{ mr: 1 }} />
+          View Meetings
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <DeleteIcon sx={{ mr: 1 }} />

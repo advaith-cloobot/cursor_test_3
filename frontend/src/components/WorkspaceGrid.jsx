@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Grid,
@@ -19,6 +20,7 @@ import FileUploadDialog from './FileUploadDialog';
 import { workspaceAPI } from '../services/api';
 
 const WorkspaceGrid = () => {
+  const navigate = useNavigate();
   const [workspaces, setWorkspaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -135,6 +137,10 @@ const WorkspaceGrid = () => {
     window.location.href = `/sow/${workspaceId}`;
   };
 
+  const handleViewMeetings = (workspaceId) => {
+    navigate(`/workspace/${workspaceId}/meetings`);
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
@@ -201,6 +207,7 @@ const WorkspaceGrid = () => {
                 onDelete={handleDeleteWorkspace}
                 onUpload={handleUploadFiles}
                 onViewSOW={handleViewSOW}
+                onViewMeetings={handleViewMeetings}
               />
             </Grid>
           ))

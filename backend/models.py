@@ -289,3 +289,278 @@ class WorkspaceSOWModel:
         conn.commit()
         conn.close()
         return cursor.rowcount > 0
+
+class MeetingModel:
+    @staticmethod
+    def create(workspace_id, meeting_name, stakeholders, meeting_date, meeting_details):
+        """Create a new meeting"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            INSERT INTO meetings (workspace_id, meeting_name, stakeholders, meeting_date, meeting_details)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (workspace_id, meeting_name, json.dumps(stakeholders), meeting_date, meeting_details))
+        
+        meeting_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        return meeting_id
+    
+    @staticmethod
+    def get_all_by_workspace(workspace_id):
+        """Get all meetings for a workspace"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT * FROM meetings WHERE workspace_id = ? ORDER BY meeting_date DESC', (workspace_id,))
+        meetings = cursor.fetchall()
+        conn.close()
+        
+        result = []
+        for meeting in meetings:
+            result.append({
+                'id': meeting['id'],
+                'workspace_id': meeting['workspace_id'],
+                'meeting_name': meeting['meeting_name'],
+                'stakeholders': json.loads(meeting['stakeholders']) if meeting['stakeholders'] else [],
+                'meeting_date': meeting['meeting_date'],
+                'meeting_details': meeting['meeting_details'],
+                'has_files': bool(meeting['has_files']),
+                'processing_status': meeting['processing_status'],
+                'created_at': meeting['created_at'],
+                'updated_at': meeting['updated_at']
+            })
+        return result
+    
+    @staticmethod
+    def get_by_id(meeting_id):
+        """Get meeting by ID"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT * FROM meetings WHERE id = ?', (meeting_id,))
+        meeting = cursor.fetchone()
+        conn.close()
+        
+        if meeting:
+            return {
+                'id': meeting['id'],
+                'workspace_id': meeting['workspace_id'],
+                'meeting_name': meeting['meeting_name'],
+                'stakeholders': json.loads(meeting['stakeholders']) if meeting['stakeholders'] else [],
+                'meeting_date': meeting['meeting_date'],
+                'meeting_details': meeting['meeting_details'],
+                'has_files': bool(meeting['has_files']),
+                'processing_status': meeting['processing_status'],
+                'created_at': meeting['created_at'],
+                'updated_at': meeting['updated_at']
+            }
+        return None
+    
+    @staticmethod
+    def update(meeting_id, meeting_name=None, stakeholders=None, meeting_date=None, meeting_details=None):
+        """Update meeting"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        updates = []
+        params = []
+        
+        if meeting_name is not None:
+            updates.append('meeting_name = ?')
+            params.append(meeting_name)
+        if stakeholders is not None:
+            updates.append('stakeholders = ?')
+            params.append(json.dumps(stakeholders))
+        if meeting_date is not None:
+            updates.append('meeting_date = ?')
+            params.append(meeting_date)
+        if meeting_details is not None:
+            updates.append('meeting_details = ?')
+            params.append(meeting_details)
+        
+        updates.append('updated_at = CURRENT_TIMESTAMP')
+        params.append(meeting_id)
+        
+        cursor.execute(f'''
+            UPDATE meetings 
+            SET {', '.join(updates)}
+            WHERE id = ?
+        ''', params)
+        
+        conn.commit()
+        conn.close()
+        return cursor.rowcount > 0
+    
+    @staticmethod
+    def delete(meeting_id):
+        """Delete meeting"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('DELETE FROM meetings WHERE id = ?', (meeting_id,))
+        conn.commit()
+        conn.close()
+        return cursor.rowcount > 0
+    
+    @staticmethod
+    def update_processing_status(meeting_id, status):
+        """Update meeting processing status"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            UPDATE meetings 
+            SET processing_status = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        ''', (status, meeting_id))
+        
+        conn.commit()
+        conn.close()
+        return cursor.rowcount > 0
+    
+    @staticmethod
+    def set_has_files(meeting_id, has_files=True):
+        """Set has_files flag for meeting"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            UPDATE meetings 
+            SET has_files = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        ''', (1 if has_files else 0, meeting_id))
+        
+        conn.commit()
+        conn.close()
+        return cursor.rowcount > 0
+
+class MeetingFileModel:
+    @staticmethod
+    def create(meeting_id, filename, file_path, file_type, extracted_content):
+        """Create a new meeting file record"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            INSERT INTO meeting_files (meeting_id, filename, file_path, file_type, extracted_content)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (meeting_id, filename, file_path, file_type, extracted_content))
+        
+        file_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        return file_id
+    
+    @staticmethod
+    def get_by_meeting_id(meeting_id):
+        """Get all files for a meeting"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT * FROM meeting_files WHERE meeting_id = ?', (meeting_id,))
+        files = cursor.fetchall()
+        conn.close()
+        
+        result = []
+        for file in files:
+            result.append({
+                'id': file['id'],
+                'meeting_id': file['meeting_id'],
+                'filename': file['filename'],
+                'file_path': file['file_path'],
+                'file_type': file['file_type'],
+                'extracted_content': file['extracted_content'],
+                'uploaded_at': file['uploaded_at']
+            })
+        return result
+    
+    @staticmethod
+    def delete_by_meeting_id(meeting_id):
+        """Delete all files for a meeting"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('DELETE FROM meeting_files WHERE meeting_id = ?', (meeting_id,))
+        conn.commit()
+        conn.close()
+        return cursor.rowcount > 0
+
+class MeetingExtractedValueModel:
+    @staticmethod
+    def create(meeting_id, value_type, value_data):
+        """Create a meeting extracted value record"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            INSERT INTO meeting_extracted_values (meeting_id, value_type, value_data)
+            VALUES (?, ?, ?)
+        ''', (meeting_id, value_type, json.dumps(value_data)))
+        
+        value_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        return value_id
+    
+    @staticmethod
+    def bulk_create(meeting_id, extracted_data):
+        """Bulk insert all V1-V16 values for a meeting"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Delete existing values for this meeting first
+        cursor.execute('DELETE FROM meeting_extracted_values WHERE meeting_id = ?', (meeting_id,))
+        
+        # Insert all value types
+        for value_type, value_data in extracted_data.items():
+            cursor.execute('''
+                INSERT INTO meeting_extracted_values (meeting_id, value_type, value_data)
+                VALUES (?, ?, ?)
+            ''', (meeting_id, value_type, json.dumps(value_data)))
+        
+        conn.commit()
+        conn.close()
+        return True
+    
+    @staticmethod
+    def get_by_meeting_id(meeting_id):
+        """Get all extracted values for a meeting"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT * FROM meeting_extracted_values WHERE meeting_id = ? ORDER BY value_type', (meeting_id,))
+        values = cursor.fetchall()
+        conn.close()
+        
+        result = {}
+        for value in values:
+            result[value['value_type']] = json.loads(value['value_data']) if value['value_data'] else []
+        return result
+    
+    @staticmethod
+    def get_by_meeting_and_type(meeting_id, value_type):
+        """Get specific value type for a meeting"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT * FROM meeting_extracted_values WHERE meeting_id = ? AND value_type = ?', 
+                      (meeting_id, value_type))
+        value = cursor.fetchone()
+        conn.close()
+        
+        if value:
+            return json.loads(value['value_data']) if value['value_data'] else []
+        return []
+    
+    @staticmethod
+    def delete_by_meeting_id(meeting_id):
+        """Delete all extracted values for a meeting"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('DELETE FROM meeting_extracted_values WHERE meeting_id = ?', (meeting_id,))
+        conn.commit()
+        conn.close()
+        return cursor.rowcount > 0

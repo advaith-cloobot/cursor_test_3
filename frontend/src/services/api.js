@@ -70,4 +70,26 @@ export const licenseAPI = {
   getAll: () => api.get('/licenses'),
 };
 
+// Meeting API functions
+export const meetingAPI = {
+  getAll: (workspaceId) => api.get(`/workspaces/${workspaceId}/meetings`),
+  getById: (meetingId) => api.get(`/meetings/${meetingId}`),
+  create: (workspaceId, data) => api.post(`/workspaces/${workspaceId}/meetings`, data),
+  update: (meetingId, data) => api.put(`/meetings/${meetingId}`, data),
+  delete: (meetingId) => api.delete(`/meetings/${meetingId}`),
+  uploadFiles: (meetingId, files) => {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    return api.post(`/meetings/${meetingId}/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  getValues: (meetingId) => api.get(`/meetings/${meetingId}/values`),
+  getStakeholders: (workspaceId) => api.get(`/workspaces/${workspaceId}/stakeholders`),
+};
+
 export default api;

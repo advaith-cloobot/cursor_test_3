@@ -21,7 +21,10 @@ def get_gpt_list(code):
     gpt4_32k_list = [OPENAI_ENGINE_NAME_GPT4_32K_V3, OPENAI_ENGINE_NAME_GPT4_32K, OPENAI_ENGINE_NAME_GPT4_32K_V2]
     gpt4o_12k_list = [OPENAI_ENGINE_NAME_GPT4O_12K]
     gpt4_VE_32k_list = [OPENAI_ENGINE_NAME_GPT_VECT_EMBED]
-    gpt4o_50k_LIST = [OPENAI_ENGINE_NAME_GPT4o_50k]
+    gpt5_list = [OPENAI_ENGINE_NAME_GPT_5_MINI]
+    #claude
+    claude_3_5_sonnet_list = [ANTHROPIC_ENGINE_NAME_CLAUDE_3_5_SONNET, ANTHROPIC_ENGINE_NAME_CLAUDE_3_5_SONNET_V2]
+    claude_4_sonnet_list = [ANTHROPIC_ENGINE_NAME_CLAUDE_4_SONNET]
     if code == GPT_35_16K:
         return gpt35_16k_list
     if code == GPT_4_32K:
@@ -30,8 +33,14 @@ def get_gpt_list(code):
         return gpt4o_12k_list
     if code == GPT_VECT_EMBED:
         return gpt4_VE_32k_list
-    if code == GPT_4o_50k:
-        return gpt4o_50k_LIST
+
+    if code == GPT_5:
+        return gpt5_list
+    #claude
+    if code == CLAUDE_3_5_SONNET:
+        return claude_3_5_sonnet_list
+    if code == CLAUDE_4_SONNET:
+        return claude_4_sonnet_list
 
 def init_openai_params(engine_name):
     if(engine_name == OPENAI_ENGINE_NAME_GPT3_5_16K):
@@ -55,7 +64,7 @@ def init_openai_params(engine_name):
         openai.api_version = "2023-07-01-preview"
         openai.api_key = "21f3be2548614a7f986f1f38a0942a11"
     elif(engine_name == OPENAI_ENGINE_NAME_GPT4_32K_V3):
-        # print("\n\nOPENAI_ENGINE_NAME_GPT4_32K_V3")
+        # print_statement("\n\nOPENAI_ENGINE_NAME_GPT4_32K_V3")
         openai.api_type = "azure"
         openai.api_base = "https://cloobot-openai-canadaeast.openai.azure.com/"
         # openai.api_version = "2023-07-01-preview"
@@ -81,6 +90,7 @@ def init_openai_params(engine_name):
         openai.api_base = "https://idsgpt4o.openai.azure.com/"
         openai.api_version = "2024-08-01-preview"
         openai.api_key = "22e36c76c51c451c95eaa87c48754947"
+    
     else:
         pass
 
